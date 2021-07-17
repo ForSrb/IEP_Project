@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  authenticationDB:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+    volumes:
+      - dbdataAuth:/var/lib/mysql
+    ports:
+      - 3306:3306
+    networks:
+      - mynetAuth
+  adminer:
+    image: adminer
+    ports:
+      - 8080:8080
+    networks:
+      - mynetAuth
+      - mynetElec
+  authenticationDBMigration:
+    image: authenticationdbmigration
+    environment:
+      - DATABASE_URL=authenticationDB
+    networks:
+      - mynetAuth
+  authentication:
+    image: authentication
+    environment:
+      - DATABASE_URL=authenticationDB
+    ports:
+    - 5005:5005
+    networks:
+      - mynetAuth
+
+volumes:
+  dbdataAuth:
+
+networks:
+  mynetAuth:
+    driver: overlay
+  mynetElec:
+    driver: overlay
